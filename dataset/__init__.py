@@ -1,8 +1,9 @@
-from .datasets import captions_dataset
+
 from .captions_dataset import captions_dataingestion
 from .image_dataset import ImageCaptionDataset, FeatureExtraction
 
-from .config import train_config
+from config import train_config
+
 
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader

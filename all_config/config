@@ -38,8 +38,8 @@ class train_config():
         self.image_size: tuple[int,int] = (224,224)
         self.batch_size: int = 32
 
-        self.model = ''
-        self.optimizer = 'adam'
+        self.model = 'Lstm'
+        self.optimizer = 'Adam'
         self.learning_rate: float = 0.001
         self.loss = 'cross_entropy'
         self.epochs:int = 10

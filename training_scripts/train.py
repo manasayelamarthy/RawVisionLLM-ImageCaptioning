@@ -46,5 +46,60 @@ Config = train_Config(**args)
 Dataset = get_dataset(Config)
 train_dataset, valid_dataset = train_test_split(Dataset)
 
-train_dataloaders, valid_dataloaders = get_dataloader(train_dataset, valid_dataset, Config)
+train_dataloader, val_dataloader = get_dataloader(train_dataset, valid_dataset, Config)
 
+model = all_models[Config.model]
+optimizer = torch.optim.Config.optimizer(model.parameters(), learning_rate = Config.learning_rate)
+criterion = nn.CrossEntropyLoss()
+
+num_epochs = Config.epochs
+
+train_logs = {
+    'loss' : 0
+}
+
+best_metric = 0
+train_logger = trainLogging(Config)
+start_time = time.time()
+
+for epoch in range(num_epochs):
+    
+    model.train()
+
+    train_iterator = tqdm(train_dataloader, total = len(train_dataloader), desc = f'Epoch-{epoch+1}:')
+
+    
+    for features,input_tensor,target_tensor in train_iterator:
+        inputs = features.to(device)
+    
+        input_captions= input_tensor.to(device)
+        target_tensor= target_tensor.to(device)
+
+        optimizer.zero_grad()
+        outputs = model(inputs,input_captions)
+        loss = criterion(outputs, target_tensor.long())
+
+        loss.backward()
+        optimizer.step()
+
+        train_logs['loss'] +=loss.item()
+    train_logs['loss'] /= len(train_dataloader)
+
+
+    val_logs = validate(model, val_dataloader, criterion, device)
+    print("Train : ", train_logs)
+    print("Validation : " , val_logs)
+
+    train_logger.add_logs(epoch + 1, train_logs, val_logs)
+
+    if val_logs['accuracy'] > best_accuracy:
+        filename = Config.checkpoint_dir + f'{Config.model}.pth'
+        checkpoint = save_checkpoint(model, filename)
+        best_accuracy = val_logs['accuracy']
+
+filename = Config.log_dir + Config.model + '.csv'
+train_logger.save_logs(filename)
+
+total_training_time = time.time() - start_time
+
+print(f"training completed in {total_training_time:.2f}s")
