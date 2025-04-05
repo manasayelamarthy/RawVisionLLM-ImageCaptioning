@@ -57,11 +57,4 @@ class captions_dataingestion:
         return tokens_tensor
 
 if __name__ == "__main__":
-    csv_file_path = "data/captions.csv"
     
-    data_ingestor = captions_dataingestion(csv_file_path)
-    df = data_ingestor.read_csv()
-    captions = data_ingestor.data_cleaning(df)
-    tokens_tensor = data_ingestor.convert_tokens(captions)
-
-    print("Tokenized Captions Tensor Shape:", tokens_tensor.shape)
