@@ -23,10 +23,7 @@ def get_dataset(config = train_config):
 
     return dataset
 
-config = train_config()
-Dataset = get_dataset(**config.__dict__)
 
-train_dataset, valid_dataset = train_test_split(Dataset)
 
 def get_dataloader(train_dataset, valid_dataset, config = train_config()):
     if config.mode == 'train':

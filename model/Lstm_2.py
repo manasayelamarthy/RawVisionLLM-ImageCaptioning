@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch
 
-class ImageCaptioningModel(nn.Module):
+class LstmModel_2(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size):
-        super(ImageCaptioningModel, self).__init__()
+        super(LstmModel_2, self).__init__()
         self.embed = nn.Embedding(vocab_size, embed_size)
         self.lstm = nn.LSTM(embed_size, hidden_size, batch_first=True)
         self.linear = nn.Linear(hidden_size, vocab_size)
