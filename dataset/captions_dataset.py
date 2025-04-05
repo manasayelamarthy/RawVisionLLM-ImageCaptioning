@@ -11,10 +11,17 @@ class captions_dataingestion:
         self.csv_file_path = csv_file_path
 
     def read_csv(self):
+        """
+           Read csv file and return df
+
+        """
         df = pd.read_csv(self.csv_file_path)
         return df
 
     def data_cleaning(self, df) -> list:
+        """
+          done data cleaning for csv file retunrn it as a list
+        """
         df['caption'] = df['caption'].apply(lambda x: x.lower())
         df['caption'] = df['caption'].apply(lambda x: re.sub(r"[^a-z\s]", "", x))
         df['caption'] = df['caption'].apply(lambda x: " ".join([word for word in x.split() if len(word) > 5]))
@@ -23,6 +30,9 @@ class captions_dataingestion:
         return captions
 
     def convert_tokens(self, captions: list):
+        """
+          Convert words into token with padding
+        """
         all_words = [word for caption in captions for word in caption.split()]
         word_count = Counter(all_words)
 
