@@ -56,6 +56,6 @@ class captions_dataingestion:
         tokens_tensor = torch.tensor(padded_captions, dtype=torch.long)
         return tokens_tensor
 
-if __name__ == "__main__":
+
     
     

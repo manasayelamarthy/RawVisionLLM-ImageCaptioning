@@ -13,7 +13,6 @@ class train_config():
 
         self.model:str = ''
         self.optimizer = None
-        self.metrics:str = None
         self.learning_rate: float = 0.0
         self.loss:str = ''
         self.epochs:int = None
@@ -41,7 +40,6 @@ class train_config():
 
         self.model = ''
         self.optimizer = 'adam'
-        self.metrics = 'all_metrics'
         self.learning_rate: float = 0.001
         self.loss = 'cross_entropy'
         self.epochs:int = 10
