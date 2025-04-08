@@ -12,6 +12,8 @@ class train_config():
         self.batch_size: int = None
 
         self.model:str = ''
+        self.embed_size: int = None
+        self.hidden_size: int = None
         self.optimizer = None
         self.learning_rate: float = 0.0
         self.loss:str = ''
@@ -39,6 +41,8 @@ class train_config():
         self.batch_size: int = 32
 
         self.model = 'Lstm'
+        self.embed_size = 512
+        self.hidden_size = 512
         self.optimizer = 'Adam'
         self.learning_rate: float = 0.001
         self.loss = 'cross_entropy'

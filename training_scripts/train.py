@@ -5,12 +5,15 @@ from tqdm import tqdm
 import time
 
 from sklearn.model_selection import train_test_split
+from torch.utils.data import random_split
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+# print("PYTHONPATH:", sys.path)
 
-from dataset import get_dataset, get_dataloader
-from config import train_Config
+from dataset import get_dataloader, ImageCaptionDataset
+from all_config import train_config 
 from models import all_models
 from validation import validate
 
@@ -30,6 +33,8 @@ def arg_parse():
 
 
     parser.add_argument('--model', choices = ['Lstm', 'Lstm_1', 'Lstm_2'], help = 'choose between models')
+    parser.add_argument('--embed-size', type = int, help = 'embedding size')
+    parser.add_argument('--hidden-size', type = int, help = 'hidden size')
     parser.add_argument('--optimizer', type = str, help = 'optimizer')
     parser.add_argument('--learning_rate', type = int, help = 'learning_rate')
     parser.add_argument('--loss', type = int, help = 'loss')
@@ -40,16 +45,39 @@ def arg_parse():
     return parser.parse_args()
 
 args = arg_parse().__dict__
-Config = train_Config(**args)
+Config = train_config(**args)
 
 
-Dataset = get_dataset(Config)
-train_dataset, valid_dataset = train_test_split(Dataset)
+dataset = ImageCaptionDataset(img_dir=Config.image_dir,
+                            image_size=Config.image_size,
+                            csv_file_path=Config.csv_file_path)
+
+print("Dataset Loaded")
+
+train_size = int(0.8 * len(dataset))
+valid_size = len(dataset) - train_size
+train_dataset, valid_dataset = random_split(dataset, [train_size, valid_size])
+
+print("Train and Valid Datasets Split")
 
 train_dataloader, val_dataloader = get_dataloader(train_dataset, valid_dataset, Config)
 
-model = all_models[Config.model]
-optimizer = torch.optim.Config.optimizer(model.parameters(), learning_rate = Config.learning_rate)
+print("Train and Valid Dataloaders Loaded")
+
+model = all_models[Config.model](
+    embed_size=Config.embed_size,
+    hidden_size=Config.hidden_size,
+    vocab_size = dataset.captions_dataingestion.vocab_size
+)
+
+print("Model Loaded")
+
+optimizer_class = getattr(torch.optim, Config.optimizer)
+optimizer = optimizer_class(model.parameters(), lr=Config.learning_rate)
+
+
+print("Optimizer Loaded")
+
 criterion = nn.CrossEntropyLoss()
 
 num_epochs = Config.epochs
@@ -58,7 +86,7 @@ train_logs = {
     'loss' : 0
 }
 
-best_metric = 0
+best_loss = float('inf')
 train_logger = trainLogging(Config)
 start_time = time.time()
 
@@ -92,10 +120,10 @@ for epoch in range(num_epochs):
 
     train_logger.add_logs(epoch + 1, train_logs, val_logs)
 
-    if val_logs['accuracy'] > best_accuracy:
+    if val_logs['loss'] < best_loss:
         filename = Config.checkpoint_dir + f'{Config.model}.pth'
         checkpoint = save_checkpoint(model, filename)
-        best_accuracy = val_logs['accuracy']
+        best_loss = val_logs['loss']
 
 filename = Config.log_dir + Config.model + '.csv'
 train_logger.save_logs(filename)

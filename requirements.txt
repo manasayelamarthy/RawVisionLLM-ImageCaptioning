@@ -2,5 +2,7 @@ pandas
 numpy
 matplotlib
 torch
+torchvision
 opencv-python
-sklearn
+scikit-learn
+tqdm

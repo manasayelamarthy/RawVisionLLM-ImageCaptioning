@@ -1,38 +1,36 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import random
 import torch
 import re
 from collections import Counter
 
 class captions_dataingestion:
     def __init__(self, csv_file_path):
-        self.csv_file_path = csv_file_path
+        self.data = pd.read_csv(csv_file_path)
 
-    def read_csv(self):
-        """
-           Read csv file and return df
+        self.data_cleaning()
+        self.vocab_size = self.convert_tokens()
 
-        """
-        df = pd.read_csv(self.csv_file_path)
-        return df
-
-    def data_cleaning(self, df) -> list:
+    def data_cleaning(self) -> list:
         """
           done data cleaning for csv file retunrn it as a list
         """
-        df['caption'] = df['caption'].apply(lambda x: x.lower())
-        df['caption'] = df['caption'].apply(lambda x: re.sub(r"[^a-z\s]", "", x))
-        df['caption'] = df['caption'].apply(lambda x: " ".join([word for word in x.split() if len(word) > 5]))
+        self.data['caption'] = self.data['caption'].apply(lambda x: x.lower())
+        self.data['caption'] = self.data['caption'].apply(lambda x: re.sub(r"[^a-z\s]", "", x))
+        self.data['caption'] = self.data['caption'].apply(lambda x: " ".join([word for word in x.split() if len(word) > 5]))
 
-        captions = df['caption'].tolist()
-        return captions
+    def get_random_caption(self, image_name : str):
+        tokens_list = self.data[self.data['image'] == image_name]['tokens'].tolist()
+        caption_tokens = random.choice(tokens_list)
+        return caption_tokens
 
-    def convert_tokens(self, captions: list):
+    def convert_tokens(self):
         """
           Convert words into token with padding
         """
+        captions = self.data['caption'].tolist()
         all_words = [word for caption in captions for word in caption.split()]
         word_count = Counter(all_words)
 
@@ -53,8 +51,11 @@ class captions_dataingestion:
     
         padded_captions = [seq + [vocab["<PAD>"]] * (max_len - len(seq)) for seq in tokenized_captions]
 
-        tokens_tensor = torch.tensor(padded_captions, dtype=torch.long)
-        return tokens_tensor
+        all_tokens = torch.tensor(padded_captions, dtype=torch.long)
+        
+        self.data['tokens'] = [t.tolist() for t in all_tokens]
+
+        return len(vocab)
 
 
     
