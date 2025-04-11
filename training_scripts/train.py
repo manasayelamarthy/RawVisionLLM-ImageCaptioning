@@ -68,7 +68,7 @@ model = all_models[Config.model](
     embed_size=Config.embed_size,
     hidden_size=Config.hidden_size,
     vocab_size = dataset.captions_dataingestion.vocab_size
-)
+).to(device)
 
 print("Model Loaded")
 
