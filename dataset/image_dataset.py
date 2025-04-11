@@ -14,13 +14,17 @@ class FeatureExtraction:
 
     def load_model(self):
         model = models.densenet201(weights=models.DenseNet201_Weights.DEFAULT)
-        feature_extractor = nn.Sequential(*list(model.features.children()))
-        feature_extractor.eval()
+      
+        features = model.features
         
+        feature_extractor = nn.Sequential(
+            features,
+            nn.AdaptiveAvgPool2d((1, 1))  
+        )
+        feature_extractor.eval()
         return feature_extractor
 
     def get_image_features(self, image_path: str, image_size: tuple[int, int]):
-        
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, image_size)
@@ -29,7 +33,7 @@ class FeatureExtraction:
 
         with torch.no_grad():
             features = self.feature_extractor(image)
-            features = torch.flatten(features, 1)
+            features = features.squeeze(-1).squeeze(-1)
 
         return features
 

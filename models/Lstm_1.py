@@ -31,28 +31,24 @@ class LstmModel_1(nn.Module):
         returns: [batch_size, vocab_size] - logits for next word prediction
         """
 
-        # Project image features to embedding space and add time dimension
-        img_embed = F.relu(self.img_fc(img_features)).unsqueeze(1)  # [B, 1, embed_dim]
+        img_embed = F.relu(self.img_fc(img_features)).unsqueeze(1) 
 
-        # Embed captions
-        embedded_captions = self.embedding(captions)  # [B, T, embed_dim]
+        
+        embedded_captions = self.embedding(captions)  
+        merged = torch.cat((img_embed, embedded_captions), dim=1)  
 
-        # Concatenate image as the first "word" in the caption
-        merged = torch.cat((img_embed, embedded_captions), dim=1)  # [B, T+1, embed_dim]
+       
+        lstm_out, _ = self.lstm(merged)
 
-        # LSTM output
-        lstm_out, _ = self.lstm(merged)  # [B, T+1, hidden_dim]
+      
+        sentence_vector = lstm_out[:, -1, :]  
 
-        # Use last time step's output as sentence representation
-        sentence_vector = lstm_out[:, -1, :]  # [B, hidden_dim]
-
-        # Combine with image embedding
         x = self.dropout1(sentence_vector)
-        x = self.add_fc(x) + img_embed.squeeze(1)  # [B, embed_dim]
+        x = self.add_fc(x) + img_embed.squeeze(1)  
 
-        # Pass through dense layers
+       
         x = F.relu(self.fc(x))
         x = self.dropout2(x)
-        output = self.output(x)  # [B, vocab_size]
+        output = self.output(x)  
 
         return output

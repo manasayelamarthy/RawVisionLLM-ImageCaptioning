@@ -17,7 +17,6 @@ class LstmModel(nn.Module):
             batch_first=True
         )
 
-        # Transformation from LSTM output to embedding
         self.dropout1 = nn.Dropout(0.5)
         self.fc_add = nn.Linear(hidden_size, embed_size)
         self.relu = nn.ReLU()
@@ -28,27 +27,24 @@ class LstmModel(nn.Module):
         self.fc2 = nn.Linear(128, vocab_size)
 
     def forward(self, image_features, captions):
-        # Project image features
-        img_embed = self.relu(self.image_fc(image_features))  # [B, embed_size]
-        img_embed = img_embed.unsqueeze(1)  # [B, 1, embed_size]
-
-        # Embed input captions
+        
+        img_embed = self.relu(self.image_fc(image_features))  
+        
         caption_embed = self.embedding(captions)  # [B, T, embed_size]
-
-        # Concatenate image embedding as first token
+        
         sequence_input = torch.cat((img_embed, caption_embed), dim=1)  # [B, T+1, embed_size]
 
-        # Pass through LSTM
+        
         lstm_out, _ = self.lstm(sequence_input)  # [B, T+1, hidden_size]
-        last_output = lstm_out[:, -1, :]  # Use output of the last time step
-
-        # Combine with image features again (residual style)
-        last_output = self.dropout1(last_output)
-        combined = self.fc_add(last_output) + img_embed.squeeze(1)  # [B, embed_size]
-
-        # Final classification over vocabulary
+        
+        lstm_out = self.dropout1(lstm_out)
+        combined = self.fc_add(lstm_out)  # [B, T+1, embed_size]
+        
+       
         x = self.relu(self.fc1(combined))
         x = self.dropout2(x)
-        output = self.fc2(x)  # [B, vocab_size]
-
+        output = self.fc2(x)  # [B, T+1, vocab_size]
+        
+        output = output[:, 1:, :]  # [B, T, vocab_size]
+        
         return output

@@ -11,8 +11,8 @@ class captions_dataingestion:
         self.data = pd.read_csv(csv_file_path)
 
         self.data_cleaning()
-        self.vocab_size = self.convert_tokens()
-
+        self.vocab_size, self.vocab = self.convert_tokens()
+        
     def data_cleaning(self) -> list:
         """
           done data cleaning for csv file retunrn it as a list
@@ -55,7 +55,7 @@ class captions_dataingestion:
         
         self.data['tokens'] = [t.tolist() for t in all_tokens]
 
-        return len(vocab)
+        return len(vocab), vocab
 
 
     

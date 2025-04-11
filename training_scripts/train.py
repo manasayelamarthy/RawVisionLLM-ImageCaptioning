@@ -97,14 +97,18 @@ for epoch in range(num_epochs):
     train_iterator = tqdm(train_dataloader, total = len(train_dataloader), desc = f'Epoch-{epoch+1}:')
 
     
-    for features,input_tensor,target_tensor in train_iterator:
+    for features, input_tensor, target_tensor in train_iterator:
         inputs = features.to(device)
-    
-        input_captions= input_tensor.to(device)
-        target_tensor= target_tensor.to(device)
+        input_captions = input_tensor.to(device)
+        target_tensor = target_tensor.to(device)
 
         optimizer.zero_grad()
-        outputs = model(inputs,input_captions)
+        outputs = model(inputs, input_captions)
+       
+        
+        outputs = outputs.reshape(-1, outputs.size(-1)) 
+        target_tensor = target_tensor.view(-1)  
+       
         loss = criterion(outputs, target_tensor.long())
 
         loss.backward()

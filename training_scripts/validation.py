@@ -16,7 +16,10 @@ def validate(model, val_dataloader, criterion, device):
             target_seqs = target_seqs.to(device)
 
             outputs = model(image_features, input_seqs)
-            loss = criterion(outputs.view(-1, outputs.shape[-1]), target_seqs.view(-1))
+            outputs = outputs.reshape(-1, outputs.size(-1)) 
+            target_tensor = target_seqs.view(-1)  
+       
+            loss = criterion(outputs, target_tensor.long())
             logs['loss'] += loss.item()
 
 
